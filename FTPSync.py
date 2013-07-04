@@ -82,7 +82,7 @@ download_on_open_delay = 0
 coreConfig = {}
 
 # compiled global ignore pattern
-if type(ignore) is str or type(ignore) is unicode:
+if type(ignore) is str:
 	re_ignore = re.compile(ignore)
 else:
 	re_ignore = None
@@ -228,7 +228,7 @@ if int(sublime.version()) < 3000:
 # Returns whether the variable is some form os string
 def isString(var):
 	var_type = type(var)
-	return var_type is str or var_type is unicode
+	return var_type is str
 
 # Dumps the exception to console
 def handleException(exception):
@@ -1160,9 +1160,12 @@ class SyncCommandUpload(SyncCommandTransfer):
 
 						# cancelled
 						if scheduledUploads[self.file_path] != id:
-							return
-
+							return					
+						
 						# process
+						if type(self.file_path) != str:						
+							self.file_path = self.file_path.decode('ascii')
+						
 						connection.put(self.file_path)
 						stored.append(name)
 						printMessage("uploaded {" + self.basename + "}", name)
@@ -1634,7 +1637,7 @@ class SyncCommandGetMetadata(SyncCommand):
 
 
 def performRemoteCheck(file_path, window, forced = False):
-	if type(file_path) is not str and type(file_path) is not unicode:
+	if type(file_path) is not str:
 		return
 
 	if window is None:
@@ -2267,7 +2270,7 @@ def fillProgress(progress, entry):
 	if len(entry) == 0:
 		return
 
-	if type(entry[0]) is str or type(entry[0]) is unicode:
+	if type(entry[0]) is str:
 		entry = entry[0]
 
 	if type(entry) is list:
@@ -2325,10 +2328,10 @@ class RemoteSyncCall(RemoteThread):
 	def run(self):
 		target = self.file_path
 
-		if (type(target) is str or type(target) is unicode) and self.config is None:
+		if (type(target) is str) and self.config is None:
 			return False
 
-		elif type(target) is str or type(target) is unicode:
+		elif type(target) is str:
 			command = SyncCommandUpload(target, self.config, onSave=self.onSave, disregardIgnore=self.disregardIgnore, whitelistConnections=self.whitelistConnections, forcedSave=self.forcedSave)
 			command.addOnFinish(self.getOnFinish())
 			self.addWhitelistConnections(command)
@@ -2369,10 +2372,10 @@ class RemoteSyncDownCall(RemoteThread):
 	def run(self):
 		target = self.file_path
 
-		if (type(target) is str or type(target) is unicode) and self.config is None:
+		if (type(target) is str) and self.config is None:
 			return False
 
-		elif type(target) is str or type(target) is unicode:
+		elif type(target) is str:
 			queue = createWorker()
 
 			command = SyncCommandDownload(target, self.config, disregardIgnore=self.disregardIgnore, whitelistConnections=self.whitelistConnections)
@@ -2445,7 +2448,7 @@ class RemoteSyncDelete(RemoteThread):
 	def run(self):
 		target = self.file_path
 
-		if type(target) is str or type(target) is unicode:
+		if type(target) is str:
 			self.file_path = [ target ]
 
 		def sync(index):
